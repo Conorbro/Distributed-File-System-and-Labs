@@ -9,6 +9,8 @@ class Client
   end
   def pingServer()
     print @server.read # Read response from server (server.rb)
+    # @server.puts "KILL_SERVICE\n"
+    # @server.puts "HELO text\n"
     @server.close # Close the socket
   end
 end

@@ -3,7 +3,7 @@
 
 # Open a server socket connection
 # Wait for clients to connect
-# If client connects -> create a new thread an hand off the client interation to the thread
+# If client connects -> create a new thread and hand off the client interation to the thread
 # (New thread should be passed the socket connected to the client)
 # Go back to waiting for a client connection
 
@@ -18,37 +18,41 @@
     # - If server reaches client limit - simply reject new connections
 
 require 'socket' # Get sockets from stdlib
+require 'thread' # Get threads from stdlib
 
 class Server
   def initialize()
-    @port = 2000
+    @work_q = Queue.new
+    @port = ARGV[0]
+    @ipAddr = Socket.ip_address_list.find { |ai| ai.ipv4? && !ai.ipv4_loopback? }.ip_address
     @server = TCPServer.open(@port) # Socket to listen on port 2000
-    @threadPool = [] # empty thread pool
+    puts "Server listening on port #{@port} of #{@ipAddr}"
     startServer
   end
 
   def startServer
     loop {
-      if @threadPool.length < 5 #
-        spawnThread(@server.accept) # Runs when a client connects
-        @threadPool.each_with_index { |thread, index| puts "Thread #{index+1} status = #{thread.status}"}
-
-      else
-        puts "threadPool empty - connection refused"
-      end
-
+        if @work_q.size < 2 # Limit queue and thus thread pool
+          Thread.start(@server.accept) do |client| # Kick off new thread for every client if resources available
+            puts "Accepting new client"
+            @work_q.push 1 # Add "work" to queue
+            # if client.gets.chomp == "KILL_SERVICE\n"
+            #   exit
+            # end
+            # if client.gets.chomp == "HELO text\n"
+            #   puts "HELO text\nIP:#{@ipAddr}\nPort:[#{@port}]\n11349681\n"
+            # end
+            client.puts(Time.now.ctime) # Send the time to the client for the craic
+            client.puts "Closing the connection. Bye! Thread Pool Size = #{@work_q.size}"
+            sleep 5 # Put thread to sleep for 5 secs to simulate doing some kind of work
+            @work_q.pop(true) # Finish the "work"
+            client.close                # Disconnect from the client
+            puts "Client Closed"
+          end
+        else puts "Connection rejected, worker thread pool exhausted"
+            sleep 5
+        end
     }
-  end
-
-  def spawnThread(connection)
-    @threadPool << Thread.new(connection) do |client|
-      puts "Firing Up Thread #{@threadPool.length}"
-      client.puts(Time.now.ctime) # Send the time to the client
-        sleep(2)
-        client.puts "Closing the connection, Bye!\n" # Send goodbye message to client
-      client.close #Disconnect from client
-      # Thread.stop
-    end
   end
 end
 

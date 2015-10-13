@@ -1,3 +1,3 @@
 require_relative 'client'
 
-client1 = Client.new()
+client2 = Client.new()

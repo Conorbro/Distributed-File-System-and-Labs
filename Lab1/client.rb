@@ -1,6 +1,3 @@
-# Conor Broderick - 11349681
-# Distributed Systems - CS4032
-
 require 'socket'
 
 host = 'localhost'
