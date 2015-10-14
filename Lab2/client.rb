@@ -8,9 +8,10 @@ class Client
     pingServer
   end
   def pingServer()
-    print @server.read # Read response from server (server.rb)
-    # @server.puts "KILL_SERVICE\n"
-    # @server.puts "HELO text\n"
+    @server.puts("Conor Broderick\n")
+    while line = @server.gets
+      puts line.chop
+    end
     @server.close # Close the socket
   end
 end
