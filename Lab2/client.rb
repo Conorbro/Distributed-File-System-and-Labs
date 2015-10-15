@@ -1,4 +1,4 @@
-# Conor Broderick - 11349681
+# Obfuscated - 44c032e8bdd6a98f514cd3ecfccaab9fcb1e2da42e2401113acbcd17a05da34b
 # Distributed Systems - CS4032
 
 require 'socket'
@@ -8,7 +8,9 @@ class Client
     pingServer
   end
   def pingServer()
-    @server.puts("Conor Broderick\n")
+    @server.puts("CB\n")
+    # @server.puts("KILL_SERVICE\n")
+    # @server.puts("HELO bob\n")
     while line = @server.gets
       puts line.chop
     end

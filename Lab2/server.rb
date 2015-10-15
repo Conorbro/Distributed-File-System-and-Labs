@@ -1,4 +1,4 @@
-# Conor Broderick - 11349681
+# Obfuscated Student Number - 44c032e8bdd6a98f514cd3ecfccaab9fcb1e2da42e2401113acbcd17a05da34b
 # Distributed Systems - CS4032
 
 require 'socket' # Get sockets from stdlib
@@ -28,7 +28,7 @@ class Server
               exit
             elsif msg.include?("HELO")
               puts "Sending info to client and then closing client connection"
-              client.puts "HELO text\nIP:#{@ipAddr}\nPort:#{@port}\nStudent Number: 11349681\n"
+              client.puts "HELO text\nIP:#{@ipAddr}\nPort:#{@port}\nObfuscated Student Number: 44c032e8bdd6a98f514cd3ecfccaab9fcb1e2da42e2401113acbcd17a05da34b\n"
               client.close
             else client.puts(Time.now.ctime) # Send the time to the client for the craic
               @work_q.push 1 # Add "work" to queue
