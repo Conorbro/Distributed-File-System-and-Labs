@@ -4,12 +4,12 @@
 require 'socket'
 class Client
   def initialize()
-    @server = TCPSocket.open('localhost', 2000)
+    @server = TCPSocket.open('52.31.31.112', 3000)
     pingServer
   end
   def pingServer()
-    @server.puts("CB\n")
-    # @server.puts("KILL_SERVICE\n")
+    # @server.puts("CB\n")
+    @server.puts("KILL_SERVICE\n")
     # @server.puts("HELO bob\n")
     while line = @server.gets
       puts line.chop

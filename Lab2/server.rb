@@ -3,13 +3,17 @@
 
 require 'socket' # Get sockets from stdlib
 require 'thread' # Get threads from stdlib
+require 'open-uri'
 
 class Server
   def initialize()
     @work_q = Queue.new
-    @port = ARGV[0]
-    @ipAddr = Socket.ip_address_list.find { |ai| ai.ipv4? && !ai.ipv4_loopback? }.ip_address # Get IP of machine on network
+    # @port = ARGV[0]
+    @port = 80
+    @ipAddr = open('http://whatismyip.akamai.com').read # Get IP of machine on network
+    # @hostname = '0.0.0.0'
     @server = TCPServer.open(@port) # Socket to listen on port 2000
+    # @ipAddr = @server.peeraddr
     puts "Server listening on port #{@port} of #{@ipAddr}"
     startServer
   end
@@ -28,7 +32,7 @@ class Server
               exit
             elsif msg.include?("HELO")
               puts "Sending info to client and then closing client connection"
-              client.puts "HELO text\nIP:#{@ipAddr}\nPort:#{@port}\nObfuscated Student Number: 44c032e8bdd6a98f514cd3ecfccaab9fcb1e2da42e2401113acbcd17a05da34b\n"
+              client.puts "HELO" + msg.slice(4..-1) + "IP:#{@ipAddr}\nPort:#{@port}\nStudentID:44c032e8bdd6a98f514cd3ecfccaab9fcb1e2da42e2401113acbcd17a05da34b\n"
               client.close
             else client.puts(Time.now.ctime) # Send the time to the client for the craic
               @work_q.push 1 # Add "work" to queue
