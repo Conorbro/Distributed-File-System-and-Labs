@@ -8,8 +8,8 @@ require 'open-uri'
 class Server
   def initialize()
     @work_q = Queue.new
-    # @port = ARGV[0]
-    @port = 80
+    @port = ARGV[0]
+    # @port = 80
     @ipAddr = open('http://whatismyip.akamai.com').read # Get IP of machine on network
     # @hostname = '0.0.0.0'
     @server = TCPServer.open(@port) # Socket to listen on port 2000
