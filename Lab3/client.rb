@@ -2,6 +2,7 @@
 require "socket"
 class Client
   def initialize( server )
+    @name = nil
     @server = server
     @request = nil
     @response = nil
@@ -15,25 +16,27 @@ class Client
     @response = Thread.new do
       loop {
         msg = @server.gets.chomp
-        puts "#{msg}"
+        puts " #{msg}"
       }
     end
   end
 
   def send
     puts "Enter the username:"
-    name = $stdin.gets.chomp
-    puts "Enter rooms to join:"
-    roomName = $stdin.gets.chomp
-    msg = "JOIN_CHATROOM: #{roomName}.CLIENT_IP: 0.PORT: 0.CLIENT_NAME: #{name}."
-    puts msg
+    @name = $stdin.gets.chomp
+    puts "Enter chatroom to join:"
+    room = $stdin.gets.chomp
+    @server.puts("JOIN_CHATROOM: #{room} CLIENT_IP: 0 PORT 0 CLIENT_NAME #{@name}") # Send initial message to server
     @request = Thread.new do
       loop {
-        @server.puts(msg)
+        msg = $stdin.gets.chomp
+        # fullMsg = "CHAT: []\nJOIN_ID: []\nCLIENT_NAME: []\nMESSAGE: [#{msg} '\n\n']"
+        # Command to leave a chatroom: LEAVE_CHATROOM: roomName
+        @server.puts( msg )
       }
     end
   end
 end
 
-server = TCPSocket.open( "localhost", 4000 )
+server = TCPSocket.open( "localhost", 3000 )
 Client.new( server )
