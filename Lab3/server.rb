@@ -77,15 +77,18 @@ class Server
 
       # Send message to all users in current chat room
       # This is so hacky and bad but it kinda works as long as you're not in two different chat rooms
-      @connections[:rooms].each do |room_name, room_user|
-        @connections[:rooms][room_name].each do |room_user2|
-          if room_user2 == username
-            @connections[:rooms][room_name].each do |room_user3|
-              unless room_user3 == username
-                @connections[:clients][room_user3].puts "#{username.to_s}: #{msg}"
-              end
-            end
-          end
+
+      if msg.split()[0] == "CHAT:"
+        room = msg.split()[1]
+        puts "User: #{username} sending message to room: #{room}"
+        puts msg
+        message = msg.split(':')[4]
+        msg = message
+      end
+
+      @connections[:rooms][room].each do |room_user|
+        unless room_user == username
+          @connections[:clients][room_user].puts "#{username.to_s}: #{msg}"
         end
       end
     }
