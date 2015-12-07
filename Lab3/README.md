@@ -13,7 +13,9 @@ Hit Enter
 The following commands are sent from the client:
 
   To join a new room: "JOIN_CHATROOM: [name_of_chatroom]"
+  
   To leave a chatroom: "LEAVE_CHATROOM: [name_of_chatroom]"
+  
   To terminate connection with server: "DISCONNECT:"
 
 
