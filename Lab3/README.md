@@ -1,4 +1,4 @@
-INSTRUCTIONS
+# INSTRUCTIONS
 
 $ ruby server.rb
 
