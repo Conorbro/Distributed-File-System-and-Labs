@@ -1,7 +1,8 @@
 require "socket"
 require "securerandom"
 require 'open-uri'
-# 52.31.144.213
+require 'timeout'
+# 52.30.1.89
 class Server
 
   def initialize(port, ip)
@@ -21,7 +22,10 @@ class Server
     @connections[:roomids] = @roomids
     @connections[:links] = @links
     @clients = 0
+    @count = 0
     @rooms = 0
+    puts @ipAddr
+    @counter = 0
     run
   end
 
@@ -36,7 +40,11 @@ class Server
   def handleClient(client)
     loop {
         init_msg = client.gets.chomp
-        processMessage(init_msg, client)
+        puts "here2"
+        puts "Init_message = #{init_msg}"
+        unless init_msg.length < 5
+            processMessage(init_msg, client)
+        end
     }
   end
 
@@ -47,22 +55,62 @@ class Server
           joinRoom(init_msg, client)
         elsif init_msg.split[0].include?("LEAVE_CHATROOM:")
           leaveRoom(init_msg, client)
-        elsif init_msg.split[0] == "ANYTHING"
-            puts "."
         elsif init_msg.split[0].include?("CHAT:")
             sendMessage(init_msg, client)
+        elsif init_msg.split[0].include?("KILL_SERVICE")
+            client.close
+            exit
+        elsif init_msg.split[0].include?("DISCONNECT")
+            disconnectClient(init_msg, client)
+        else
+            puts ".."
         end
   end
+
+  def disconnectClient(init_msg, client)
+      puts "disconnecting..."
+      msg = client.gets
+      puts msg
+      msg = client.gets
+      puts msg
+      nickName = msg.split(':')[1]
+      puts nickName
+      nickName = nickName.strip
+      client_id =  @connections[:clients].key(nickName)
+      puts "client_id = #{client_id}"
+      @connections[:roomids].each do |key, room|
+        puts "key = #{key}"
+        puts "room = #{room}"
+        puts nickName
+        puts @connections[:rooms]
+        if @connections[:rooms][room].include?(String(client_id))
+            puts "here"
+           @connections[:rooms][room].delete(String(client_id))
+           puts "more"
+           room_id = @connections[:roomids].key(room)
+            msg = "CHAT:#{room_id}\nCLIENT_NAME:#{nickName}\nMESSAGE:#{nickName} has left this chatroom.\n\n"
+            puts "msg = #{msg}"
+            client.puts(msg)
+           @connections[:rooms][room].each do |user| # Post to each user in the room that the new user has left
+                @connections[:links][Integer(user)].puts msg
+            end
+        end
+      end
+     # client.close
+  end
+
 
   def sendMessage(init_msg, client)
       puts init_msg
       room_id = init_msg.split(':')[1]
+      room_id = room_id.strip
       room_id = Integer(room_id)
 
       msg = client.gets.chomp
       puts msg
       client_id = msg.split()[1]
-      client_id = Integer(client_id)
+      client_id = client_id.strip
+      client_id = String(client_id)
 
       msg = client.gets.chomp
       puts msg
@@ -71,18 +119,19 @@ class Server
       msg = client.gets.chomp
       puts msg
       message = msg.split(':')[1]
+      message = message.chomp
+      message = message.strip
+      puts message
       puts " "
       msg = "CHAT:#{room_id}\nCLIENT_NAME:#{nickName}\nMESSAGE:#{message}\n\n"
       puts msg
       room = @connections[:roomids][room_id]
 
-    #   puts @connections[:rooms]
-    #   puts @connections[:links]
-    #   puts @connections[:clients].key("client3")
+      #puts "count = #{@count}"
       @connections[:rooms][room].each do |user| # Post message to each user in the room
-            @connections[:links][Integer(user)].puts(msg)
-        end
-
+                @connections[:links][Integer(user)].puts(msg)
+      end
+      puts "Finished sending message from #{nickName} to room #{room_id}"
   end
 
   def leaveRoom(init_msg, client)
@@ -105,17 +154,19 @@ class Server
   end
 
   def joinRoom(init_msg, client)
+      puts "here"
       room = init_msg.split(':')[1]
+      puts room
       room = room.strip
       msg = client.gets
       clientIp = msg.split(':')[1].chomp
-
+      puts clientIp
       msg = client.gets
       clientPort = msg.split(':')[1].chomp
-
+      puts clientPort
       msg = client.gets
       nickName = msg.split(':')[1].chomp
-
+      puts nickName
       if @connections[:clients].has_value?(nickName) == false
           client_id = getNextClientId
           @connections[:clients][client_id] = nickName # add client id to client
@@ -130,12 +181,21 @@ class Server
       else
         room_id = @connections[:roomids].key(room)
       end
-      @connections[:rooms]["#{room}"].push("#{client_id}") # add client to room by id
+      puts "morehere"
+      @connections[:rooms][room].push(String(client_id)) # add client to room by id
       msg = "JOINED_CHATROOM:#{room}\nSERVER_IP:#{@ipAddr}\nPORT:#{@port}\nROOM_REF:#{room_id}\nJOIN_ID:#{client_id}"
       client.puts(msg)
       msg = "CHAT:#{room_id}\nCLIENT_NAME:#{nickName}\nMESSAGE:#{nickName} has joined this chatroom.\n\n"
+      puts msg
+      puts @connections[:rooms]
+      puts room
+      puts  @connections[:rooms][room].length
       @connections[:rooms][room].each do |user| # Post to each user in the room that the new user has joined
+        puts user
         @connections[:links][Integer(user)].puts msg
+        puts  @connections[:links][Integer(user)]
+        puts msg
+        puts "msg sent"
       end
   end
 
