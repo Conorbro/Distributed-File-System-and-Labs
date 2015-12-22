@@ -10,7 +10,6 @@ class FileServer
     @ipAddr = ip
     @port = port
     @server = TCPServer.open(@ipAddr, @port)
-    #@files = ["file1", "file2", "file3"]
     puts "Server running on #{@ipAddr}:#{@port}"
     run
   end
@@ -35,7 +34,6 @@ class FileServer
     if msg.include?("OPEN")
       file = msg.split(':')[1].strip
       client.puts("OPEN request received from client proxy for file #{file}:\n\0")
-      #open(client)
 
     #close
     elsif msg.include?("CLOSE")

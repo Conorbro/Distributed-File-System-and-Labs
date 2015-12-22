@@ -1,7 +1,10 @@
-contents = ""
-oFile = File.open("files/file1.txt", "r")
-oFile.each_line do |line|
-  contents += line
+def is_i?(msg)
+ !!(msg =~ /\A[-+]?[0-9]+\z/)
 end
-oFile.close
-puts contents
+
+msg = "1"
+
+if is_i?(msg)
+  puts true
+else puts false
+end
