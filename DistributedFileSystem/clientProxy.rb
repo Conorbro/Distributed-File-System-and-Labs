@@ -10,9 +10,10 @@ class ClientProxy
     @port = port
     @server = TCPServer.open(@ipAddr, @port)
     @DirectoryServerConnection = TCPSocket.open("localhost", 5000)
+    @LockServerConnection = TCPSocket.open("localhost", 4001)
     # @FileServerConnection = TCPSocket.open("localhost", 3000)
     @fileServers = Hash.new
-    @fileServers = {1=>3000}
+    @fileServers = {1=>3000, 2=>3001}
     @studentID = "44c032e8bdd6a98f514cd3ecfccaab9fcb1e2da42e2401113acbcd17a05da34b"
     puts "Client proxy running on #{@ipAddr}:#{@port}"
     run
@@ -46,43 +47,52 @@ class ClientProxy
     #open
     elsif msg.include?("OPEN")
       file_id = msg.split(':')[1].strip
-      client.puts("OPEN request received for file_id #{file_id}:\n\0")
+      puts("OPEN request received for file_id #{file_id}:\n\0")
       #open(client)
 
-    #close
+    #close - tell lock server to unlock the mutex associated with the file
     elsif msg.include?("CLOSE")
-      file_id = msg.split(':')[1].strip
-      client.puts("CLOSE request received for file_id #{file_id}:\n\0")
+      file_id = msg.split(' ')[1].strip
+      puts("CLOSE request received for file_id #{file_id}\n\0")
+      msg = queryLockServer("CLOSE #{file_id}\n", client)
+      client.puts("#{msg}\n\0")
+
 
     #read
     elsif msg.include?("READ")
       file_id = msg.split(' ')[1].strip
       puts("READ request received for file_id #{file_id}:\n\0")
-      msg = queryDirectoryServer(file_id)
-      unless !checkMsg(msg)
-        file = msg.split()[0]
-        filerServerId = Integer(msg.split()[1])
-        connection = TCPSocket.open("localhost", @fileServers[filerServerId])
-        msg = readFile(file, client, connection)
-        client.puts("#{msg}\n\0")
-      else client.puts("File not found\n\0")
+      msg = queryLockServer(file_id, client)
+      unless !checkLock(msg)
+        msg = queryDirectoryServer(file_id)
+        unless !checkMsg(msg)
+          file = msg.split()[0]
+          filerServerId = Integer(msg.split()[1])
+          connection = TCPSocket.open("localhost", @fileServers[filerServerId])
+          msg = readFile(file, client, connection)
+          client.puts("#{msg}\n\0")
+        else client.puts("File not found\n\0")
+        end
+      else client.puts("File is currently locked\n\0")
       end
 
     #write
     elsif msg.include?("WRITE")
       file_id = msg.split(' ')[1].strip
       edit = msg.split(' ')[2].strip
-      puts file_id
-      puts edit
       puts("WRITE request received for file_id #{file_id}:\n\0")
-      msg = queryDirectoryServer(file_id)
-      unless !checkMsg(msg)
-        file = msg.split()[0]
-        filerServerId = Integer(msg.split()[1])
-        connection = TCPSocket.open("localhost", @fileServers[filerServerId])
-        msg = writeFile(file, edit, client, connection)
-        client.puts("#{msg}\n\0")
-      else client.puts("File not found\n\0")
+      msg = queryLockServer(file_id, client)
+      unless !checkLock(msg)
+        msg = queryDirectoryServer(file_id)
+        unless !checkMsg(msg)
+          file = msg.split()[0]
+          filerServerId = Integer(msg.split()[1])
+          connection = TCPSocket.open("localhost", @fileServers[filerServerId])
+          msg = writeFile(file, edit, client, connection)
+          client.puts("#{msg}\n\0")
+        else client.puts("File not found\n\0")
+        end
+      else client.puts("File is currently locked\n\0")
       end
 
     #invalid input
@@ -91,8 +101,16 @@ class ClientProxy
     end
   end
 
-  def checkMsg(msg)
-    if msg.include?("Not a valid file_id") || msg.include?("File not found...")
+  def queryLockServer(msg, client)
+    msg = msg.chomp
+    @LockServerConnection.puts("#{msg} #{client}")
+    msgRec = @LockServerConnection.gets("\0").chomp("\0")
+    puts "Message Received from Lock Server: #{msgRec}"
+    return msgRec
+  end
+
+  def checkLock(msg)
+    if msg.include?("locked")
       return false
     else return true
     end
@@ -103,6 +121,13 @@ class ClientProxy
     msgRec = @DirectoryServerConnection.gets("\0").chomp("\0")
     puts "Message Received from Directory Server: #{msgRec}"
     return msgRec
+  end
+
+  def checkMsg(msg)
+    if msg.include?("Not a valid file_id") || msg.include?("File not found...")
+      return false
+    else return true
+    end
   end
 
   def readFile(file, client, connection)

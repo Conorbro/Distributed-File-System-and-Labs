@@ -10,9 +10,15 @@ class Client
   def pingServer()
       loop{
         msg = gets.chomp
+        fileId = msg.split[1]
         @ClientProxyServer.puts(msg)
         msgRec = @ClientProxyServer.gets("\0").chomp("\0")
         puts msgRec.chomp
+        # if msg.include?("READ") || msg.include?("WRITE")
+        #   @ClientProxyServer.puts("CLOSE #{fileId}")
+        #   msgRec = @ClientProxyServer.gets("\0").chomp("\0")
+        #   puts msgRec.chomp
+        # end
     }
   end
 end
@@ -21,4 +27,6 @@ Client.new()
 
 
 # PROTOCOL
-# COMMAND: filename edit
+# WRITE: command filename edit
+# READ: command filename
+# CLOSE: command filename

@@ -10,9 +10,11 @@ class DirectoryServer
     @port = port
     @server = TCPServer.open(@ipAddr, @port)
     @fileServer1 = Hash.new
+    @fileServer2 = Hash.new
     @fileServer1 = {1=>"file1.txt", 2=>"file2.txt", 3=>"file3.txt"}
+    @fileServer2 = {4=>"file4.txt"}
     @fileServers = Hash.new
-    @fileServers = {1=>@fileServer1}
+    @fileServers = {1=>@fileServer1, 2=>@fileServer2}
     puts "Directory Server running on #{@ipAddr}:#{@port}"
     run
   end
@@ -45,6 +47,7 @@ class DirectoryServer
   def findFile(fileId)
     msg = "File not found..."
     @fileServers.each do |key, value|
+      puts key
      if value.has_key?(fileId)
        fileName = value[fileId]
        puts "fileName = #{fileName}"
