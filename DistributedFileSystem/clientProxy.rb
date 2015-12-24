@@ -2,6 +2,7 @@
 # Distributed Systems - CS4032
 
 require "socket"
+require 'timeout'
 
 class ClientProxy
 
@@ -68,7 +69,12 @@ class ClientProxy
         unless !checkMsg(msg)
           file = msg.split()[0]
           filerServerId = Integer(msg.split()[1])
-          connection = TCPSocket.open("localhost", @fileServers[filerServerId])
+          puts "here"
+          if port_open?("localhost", 3000, 1)
+            connection = TCPSocket.open("localhost", @fileServers[filerServerId])
+          else connection = TCPSocket.open(@ipAddr, 3002)
+          end
+          puts "here2"
           msg = readFile(file, client, connection)
           client.puts("#{msg}\n\0")
         else client.puts("File not found\n\0")
@@ -87,7 +93,12 @@ class ClientProxy
         unless !checkMsg(msg)
           file = msg.split()[0]
           filerServerId = Integer(msg.split()[1])
-          connection = TCPSocket.open("localhost", @fileServers[filerServerId])
+          if port_open?("localhost", 3000, 1)
+            connection = TCPSocket.open("localhost", @fileServers[filerServerId])
+          else
+            puts "Primary file server down, routing request to replica set"
+            connection = TCPSocket.open(@ipAddr, 3002)
+          end
           msg = writeFile(file, edit, client, connection)
           client.puts("#{msg}\n\0")
         else client.puts("File not found\n\0")
@@ -140,6 +151,19 @@ class ClientProxy
     connection.puts("WRITE: #{file} #{edit}\n")
     msgRec = connection.gets("\0").chomp("\0")
     return msgRec
+  end
+
+  def port_open?(ip, port, seconds)
+    Timeout::timeout(seconds) do
+      begin
+        TCPSocket.new(ip, port).close
+        true
+      rescue Errno::ECONNREFUSED, Errno::EHOSTUNREACH
+        false
+      end
+    end
+  rescue Timeout::Error
+    false
   end
 
 end

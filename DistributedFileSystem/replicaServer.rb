@@ -9,8 +9,7 @@ class FileServer
     @ipAddr = ip
     @port = port
     @server = TCPServer.open(@ipAddr, @port)
-    @ReplicaServerConnection = TCPSocket.open(@ipAddr, 3002)
-    puts "Server running on #{@ipAddr}:#{@port}"
+    puts "Replica Server running on #{@ipAddr}:#{@port}"
     run
   end
 
@@ -18,7 +17,7 @@ class FileServer
     loop {
       Thread.start(@server.accept) do | client |
         handleClient(client)
-        puts "Client Proxy Request Received!"
+        puts "Primary File Server Update Received!"
       end
     }.join
   end
@@ -48,14 +47,12 @@ class FileServer
 
     #write
     elsif msg.include?("WRITE")
-      @ReplicaServerConnection.puts(msg)
-      puts @ReplicaServerConnection.gets
       file = msg.split(' ')[1].strip
       edit = msg.split(' ')[2].strip
       if(write(file, edit, client))
-        puts("WRITE request completed from client proxy for file #{file}:\n\0")
-        client.puts("Write successful\n\0")
-      else client.puts("Write failed\n\0")
+        puts("WRITE request completed from for file #{file}:\n\0")
+        client.puts("Write successful to replica set\n\0")
+      else client.puts("Write failedto replica set\n\0")
       end
 
     #invalid input
@@ -66,7 +63,7 @@ class FileServer
 
   def read(file, client)
     contents = ""
-    oFile = File.open("files/#{file}", "r")
+    oFile = File.open("filesBackup/#{file}", "r")
     oFile.each_line do |line|
       contents += line
     end
@@ -77,10 +74,10 @@ class FileServer
 
   def write(file, edit, client)
     contents = ""
-    File.write("files/#{file}", edit)
+    File.write("filesBackup/#{file}", edit)
     return true
   end
 
 end
 
-FileServer.new("localhost", 3000)
+FileServer.new("localhost", 3002)

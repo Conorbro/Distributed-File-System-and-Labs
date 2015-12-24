@@ -4,15 +4,15 @@
 require 'socket'
 class Client
   def initialize()
-    @ClientProxyServer = TCPSocket.open("localhost", 4000)
+    @ClientProxyServerConnection = TCPSocket.open("localhost", 4000)
     pingServer
   end
   def pingServer()
       loop{
         msg = gets.chomp
         fileId = msg.split[1]
-        @ClientProxyServer.puts(msg)
-        msgRec = @ClientProxyServer.gets("\0").chomp("\0")
+        @ClientProxyServerConnection.puts(msg)
+        msgRec = @ClientProxyServerConnection.gets("\0").chomp("\0")
         puts msgRec.chomp
         # if msg.include?("READ") || msg.include?("WRITE")
         #   @ClientProxyServer.puts("CLOSE #{fileId}")
