@@ -4,6 +4,14 @@
 + Linux/Mac: ./start.sh
 + Windows: run.bat
 
+## Commands
++ Files: 1, 2, 3, 4
++ Read file - "READ 1"
++ Write file - "WRITE 1 : your update"
++ Close file - "CLOSE 1"
++ Hello StudentId - "HELO text"
++ Kill service - "KILL_SERVICE"
+
 ## Component Diagram:
 ![Diagram outlining the communication between each server of the file system](https://raw.githubusercontent.com/Conorbro/D.S.-Labs/master/DistributedFileSystem/Distributed%20File%20System.png)
 
