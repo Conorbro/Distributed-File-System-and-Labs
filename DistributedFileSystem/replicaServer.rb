@@ -30,6 +30,10 @@ class FileServer
   end
 
   def processMessage(msg, client)
+    if msg.include?("KILL_SERVICE")
+      exit
+    end
+    
     if msg.include?("OPEN")
       file = msg.split(':')[1].strip
       client.puts("OPEN request received from client proxy for file #{file}:\n\0")

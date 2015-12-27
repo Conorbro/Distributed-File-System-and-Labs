@@ -41,6 +41,12 @@ class ClientProxy
     if msg.split[0] == "HELO"
       client.puts("HELO #{msg.split[1]}\nIP:#{@ipAddr}\nPort:#{@port}\nStudentID:#{@studentID}\n\0") # Return initial message to client before forwarding any more messages
     elsif msg.include?("KILL_SERVICE")
+      @DirectoryServerConnection.puts("KILL_SERVICE")
+      @LockServerConnection.puts("KILL_SERVICE")
+      @fileServer1 = TCPSocket.open("localhost", 3000)
+      @fileServer2 = TCPSocket.open("localhost", 3001)
+      @fileServer1.puts("KILL_SERVICE")
+      @fileServer2.puts("KILL_SERVICE")
       client.close
       exit
 

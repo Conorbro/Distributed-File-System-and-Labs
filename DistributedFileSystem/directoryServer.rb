@@ -36,6 +36,9 @@ class DirectoryServer
   end
 
   def processMessage(msg, client)
+    if msg.include?("KILL_SERVICE")
+      exit
+    end
     unless !isInteger?(msg)
         fileId = Integer(msg)
     else client.puts("Not a valid file_id")

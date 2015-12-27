@@ -38,6 +38,9 @@ class LockServer
   end
 
   def processMessage(msg, client)
+    if msg.include?("KILL_SERVICE")
+      exit
+    end
     if msg.include?("CLOSE")
       fileId = msg.split[1].strip
       client_id = msg.split[2].strip

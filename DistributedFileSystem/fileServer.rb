@@ -57,7 +57,9 @@ class FileServer
         client.puts("Write successful\n\0")
       else client.puts("Write failed\n\0")
       end
-
+    elsif msg.include?("KILL_SERVICE")
+      @ReplicaServerConnection.puts("KILL_SERVICE")
+      exit
     #invalid input
     else
       client.puts("Invalid message received\n\0")
