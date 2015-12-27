@@ -5,6 +5,14 @@ require 'socket'
 class Client
   def initialize()
     @ClientProxyServerConnection = TCPSocket.open("localhost", 4000)
+    # Info of file system and how to use the client
+    puts "Available files: 1, 2, 3, 4"
+    puts "EXAMPLES OF VALID COMMANDS:"
+    puts "READ 1"
+    puts "WRITE 2 : Updated file text"
+    puts "CLOSE 2"
+    puts "HELO text"
+    puts "KILL_SERVICE"
     pingServer
   end
   def pingServer()
@@ -13,6 +21,7 @@ class Client
         fileId = msg.split[1]
         @ClientProxyServerConnection.puts(msg)
         msgRec = @ClientProxyServerConnection.gets("\0").chomp("\0")
+        msgRec = msgRec.strip
         puts msgRec.chomp
         # if msg.include?("READ") || msg.include?("WRITE")
         #   @ClientProxyServer.puts("CLOSE #{fileId}")
@@ -24,7 +33,6 @@ class Client
 end
 
 Client.new()
-
 
 # PROTOCOL
 # WRITE: command filename edit

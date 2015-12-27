@@ -12,7 +12,6 @@ class ClientProxy
     @server = TCPServer.open(@ipAddr, @port)
     @DirectoryServerConnection = TCPSocket.open("localhost", 5000)
     @LockServerConnection = TCPSocket.open("localhost", 4001)
-    # @FileServerConnection = TCPSocket.open("localhost", 3000)
     @fileServers = Hash.new
     @fileServers = {1=>3000, 2=>3001}
     @studentID = "44c032e8bdd6a98f514cd3ecfccaab9fcb1e2da42e2401113acbcd17a05da34b"
@@ -46,10 +45,10 @@ class ClientProxy
       exit
 
     #open
+    # Not used in NFS
     elsif msg.include?("OPEN")
       file_id = msg.split(':')[1].strip
-      puts("OPEN request received for file_id #{file_id}:\n\0")
-      #open(client)
+      puts("OPEN request received for file_id - not used in NFS model #{file_id}:\n\0")
 
     #close - tell lock server to unlock the mutex associated with the file
     elsif msg.include?("CLOSE")
@@ -57,7 +56,6 @@ class ClientProxy
       puts("CLOSE request received for file_id #{file_id}\n\0")
       msg = queryLockServer("CLOSE #{file_id}\n", client)
       client.puts("#{msg}\n\0")
-
 
     #read
     elsif msg.include?("READ")
@@ -69,12 +67,10 @@ class ClientProxy
         unless !checkMsg(msg)
           file = msg.split()[0]
           filerServerId = Integer(msg.split()[1])
-          puts "here"
           if port_open?("localhost", 3000, 1)
             connection = TCPSocket.open("localhost", @fileServers[filerServerId])
           else connection = TCPSocket.open(@ipAddr, 3002)
           end
-          puts "here2"
           msg = readFile(file, client, connection)
           client.puts("#{msg}\n\0")
         else client.puts("File not found\n\0")
@@ -85,7 +81,7 @@ class ClientProxy
     #write
     elsif msg.include?("WRITE")
       file_id = msg.split(' ')[1].strip
-      edit = msg.split(' ')[2].strip
+      edit = msg.split(':')[1]
       puts("WRITE request received for file_id #{file_id}:\n\0")
       msg = queryLockServer(file_id, client)
       unless !checkLock(msg)
@@ -148,7 +144,7 @@ class ClientProxy
   end
 
   def writeFile(file, edit, client, connection)
-    connection.puts("WRITE: #{file} #{edit}\n")
+    connection.puts("WRITE: #{file} : #{edit}\n")
     msgRec = connection.gets("\0").chomp("\0")
     return msgRec
   end

@@ -51,7 +51,7 @@ class FileServer
       @ReplicaServerConnection.puts(msg)
       puts @ReplicaServerConnection.gets
       file = msg.split(' ')[1].strip
-      edit = msg.split(' ')[2].strip
+      edit = msg.split(':')[2]
       if(write(file, edit, client))
         puts("WRITE request completed from client proxy for file #{file}:\n\0")
         client.puts("Write successful\n\0")
