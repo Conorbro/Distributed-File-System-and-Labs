@@ -4,5 +4,5 @@
 Linux/Mac: ./start.sh
 Windows: run.bat
 
-## Component Diagram
-![](https://raw.githubusercontent.com/Conorbro/D.S.-Labs/master/DistributedFileSystem/Distributed%20File%20System.png)
+## Component Diagram:
+![Diagram outlining the communication between each server of the file system](https://raw.githubusercontent.com/Conorbro/D.S.-Labs/master/DistributedFileSystem/Distributed%20File%20System.png)
