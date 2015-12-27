@@ -27,4 +27,4 @@ A file is locked when a client writes to a file and is closed when the CLOSE com
 File server 1's files are all written back to a replica server after every write by a client.
 If file server 1 dies, the replica server takes its place and clients can perform requests as usual.
 This can be tested by killing the file server 1 terminal after launching the distributed file system.
-=======
+
