@@ -1,6 +1,4 @@
-# CS4032
-
-Distributed Systems Labs
+# Distributed Systems Labs + Project
 
 + Lab 1: Basic Hello World Server Client
 + Lab 2: Basic multithreaded Server Client
